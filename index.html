@@ -1,1 +1,825 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>State Voting Guides</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <style>
+        /*
+        ----------------------------------------
+        PAGE AND COLOR SETTINGS
+        ----------------------------------------
+        */
+
+        :root {
+            --cream: #ECE6D6;
+            --blue: #5D8AA8;
+            --red: #C92535;
+            --gold: #F4B942;
+            --charcoal: #1F2430;
+            --muted-text: #505761;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+
+            background: var(--cream);
+            color: var(--charcoal);
+
+            font-family:
+                Avenir,
+                "Avenir Next",
+                Helvetica,
+                Arial,
+                sans-serif;
+        }
+
+        /*
+        Visually hidden text remains available
+        to screen readers.
+        */
+
+        .screen-reader-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /*
+        ----------------------------------------
+        MAIN MAP CONTAINER
+        ----------------------------------------
+        */
+
+        .map-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 18px;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+        }
+
+        #us-map {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: visible;
+        }
+
+        /*
+        ----------------------------------------
+        STATE STYLING
+        ----------------------------------------
+        */
+
+        .state {
+            fill: var(--blue);
+
+            /*
+            Cream borders match the Wix background.
+            */
+            stroke: var(--cream);
+            stroke-width: 1.4;
+
+            /*
+            Keeps the border approximately the same
+            thickness when the SVG changes size.
+            */
+            vector-effect: non-scaling-stroke;
+
+            transition:
+                fill 160ms ease,
+                stroke 160ms ease,
+                opacity 160ms ease;
+        }
+
+        /*
+        The state turns red on mouse hover.
+        It also turns red when reached by keyboard.
+        */
+
+        .state-link:hover .state,
+        .state-link:focus .state,
+        .state-link:focus-visible .state {
+            fill: var(--red);
+            cursor: pointer;
+        }
+
+        /*
+        A gold border makes keyboard focus clearer.
+        */
+
+        .state-link:focus,
+        .state-link:focus-visible {
+            outline: none;
+        }
+
+        .state-link:focus .state,
+        .state-link:focus-visible .state {
+            stroke: var(--gold);
+            stroke-width: 3;
+        }
+
+        /*
+        ----------------------------------------
+        CUSTOM TOOLTIP
+        ----------------------------------------
+        */
+
+        .tooltip {
+            position: absolute;
+            z-index: 10;
+
+            display: none;
+            pointer-events: none;
+
+            padding: 8px 11px;
+
+            background: var(--charcoal);
+            color: white;
+
+            border-radius: 8px;
+
+            font-family:
+                Avenir,
+                "Avenir Next",
+                Helvetica,
+                Arial,
+                sans-serif;
+
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.25;
+
+            box-shadow: 0 4px 12px rgba(31, 36, 48, 0.22);
+
+            /*
+            Prevent the tooltip from being too wide.
+            */
+            max-width: 220px;
+        }
+
+        .tooltip.visible {
+            display: block;
+        }
+
+        /*
+        ----------------------------------------
+        LOADING OR ERROR MESSAGE
+        ----------------------------------------
+        */
+
+        .status-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            padding: 10px 14px;
+
+            background: rgba(236, 230, 214, 0.94);
+            color: var(--charcoal);
+
+            border: 1px solid rgba(31, 36, 48, 0.15);
+            border-radius: 9px;
+
+            font-size: 14px;
+        }
+
+        /*
+        ----------------------------------------
+        DC AND TERRITORY LINKS
+        ----------------------------------------
+        */
+
+        .extra-jurisdictions {
+            margin-top: 10px;
+            padding-top: 14px;
+
+            border-top: 1px solid rgba(31, 36, 48, 0.18);
+        }
+
+        .extra-jurisdictions-label {
+            margin: 0 0 10px;
+
+            color: var(--charcoal);
+
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .extra-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .jurisdiction-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 38px;
+            padding: 8px 13px;
+
+            background: var(--blue);
+            color: white;
+
+            border: 2px solid transparent;
+            border-radius: 9px;
+
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.2;
+            text-align: center;
+            text-decoration: none;
+
+            transition:
+                background 160ms ease,
+                border-color 160ms ease,
+                transform 160ms ease;
+        }
+
+        .jurisdiction-link:hover,
+        .jurisdiction-link:focus,
+        .jurisdiction-link:focus-visible {
+            background: var(--red);
+            color: white;
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .jurisdiction-link:focus,
+        .jurisdiction-link:focus-visible {
+            border-color: var(--gold);
+        }
+
+        /*
+        ----------------------------------------
+        MOBILE ADJUSTMENTS
+        ----------------------------------------
+        */
+
+        @media (max-width: 600px) {
+            .map-wrapper {
+                padding: 8px;
+            }
+
+            .tooltip {
+                font-size: 13px;
+            }
+
+            .jurisdiction-link {
+                flex: 1 1 calc(50% - 8px);
+                font-size: 12px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="map-wrapper">
+
+        <h1 class="screen-reader-only">
+            Select your state or jurisdiction
+        </h1>
+
+        <div class="map-container" id="map-container">
+
+            <!--
+            The viewBox matches the dimensions for which
+            the us-atlas Albers data was prepared.
+            -->
+
+            <svg
+                id="us-map"
+                viewBox="0 0 975 610"
+                preserveAspectRatio="xMidYMid meet"
+                role="img"
+                aria-label="Clickable map of the United States"
+            ></svg>
+
+            <div
+                class="tooltip"
+                id="tooltip"
+                role="tooltip"
+            ></div>
+
+            <div
+                class="status-message"
+                id="status-message"
+            >
+                Loading map…
+            </div>
+
+        </div>
+
+        <!--
+        DC also appears geographically on the map,
+        but its shape is very small. This companion link
+        makes it easier to select.
+
+        Territories are shown here because ordinary
+        mainland map projections do not give them
+        practical, equally clickable positions.
+        -->
+
+        <section
+            class="extra-jurisdictions"
+            aria-labelledby="extra-jurisdictions-label"
+        >
+            <p
+                class="extra-jurisdictions-label"
+                id="extra-jurisdictions-label"
+            >
+                Washington, DC and U.S. territories
+            </p>
+
+            <div
+                class="extra-links"
+                id="extra-links"
+            ></div>
+        </section>
+
+    </main>
+
+    <!-- D3 draws the SVG paths. -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+    <!--
+    TopoJSON Client converts the us-atlas
+    TopoJSON data into ordinary GeoJSON features.
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+
+    <script>
+        /*
+        ==================================================
+        EDIT THESE SETTINGS
+        ==================================================
+        */
+
+        /*
+        1. Replace this with the address of your Wix site.
+
+        Do not include a slash at the end.
+
+        Examples:
+
+        https://www.example.org
+
+        or, while using a free Wix address:
+
+        https://username.wixsite.com/site-name
+        */
+
+        const WIX_DOMAIN = "https://YOUR-WIX-DOMAIN.com";
+
+
+        /*
+        2. This is the shared folder or prefix appearing
+        before each state's name.
+
+        For pages such as:
+
+        https://example.org/voting-guides/california
+
+        use:
+
+        /voting-guides
+
+        For pages such as:
+
+        https://example.org/california
+
+        use an empty string:
+
+        ""
+        */
+
+        const GUIDE_FOLDER = "/voting-guides";
+
+
+        /*
+        3. "_top" attempts to replace the entire Wix page
+        when someone clicks a state.
+
+        If Wix or the browser blocks that behavior,
+        change this to "_blank" to open the guide in
+        a new tab.
+        */
+
+        const LINK_TARGET = "_top";
+
+
+        /*
+        ==================================================
+        OPTIONAL URL EXCEPTIONS
+        ==================================================
+
+        Most links are generated automatically from the
+        jurisdiction name.
+
+        California becomes:
+        /voting-guides/california
+
+        District of Columbia becomes:
+        /voting-guides/district-of-columbia
+
+        Add an exception here only when one Wix page has
+        a different address.
+
+        Use the complete page URL.
+        */
+
+        const URL_OVERRIDES = {
+            /*
+            Example:
+
+            "California":
+                "https://www.example.org/california-voter-information",
+
+            "District of Columbia":
+                "https://www.example.org/dc"
+            */
+        };
+
+
+        /*
+        ==================================================
+        DATA LOCATION
+        ==================================================
+        */
+
+        const US_ATLAS_URL =
+            "https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json";
+
+
+        /*
+        ==================================================
+        URL FUNCTIONS
+        ==================================================
+        */
+
+        /*
+        Converts a state name into a simple URL slug.
+
+        Example:
+        "New York" → "new-york"
+        */
+
+        function slugify(name) {
+            return name
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/&/g, "and")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "");
+        }
+
+
+        /*
+        Creates a complete Wix URL for a state.
+
+        A manually entered URL override takes priority.
+        */
+
+        function guideUrl(name, customSlug = null) {
+            if (URL_OVERRIDES[name]) {
+                return URL_OVERRIDES[name];
+            }
+
+            const cleanDomain =
+                WIX_DOMAIN.replace(/\/+$/, "");
+
+            const cleanFolder =
+                GUIDE_FOLDER
+                    ? "/" + GUIDE_FOLDER.replace(/^\/+|\/+$/g, "")
+                    : "";
+
+            const slug =
+                customSlug || slugify(name);
+
+            return `${cleanDomain}${cleanFolder}/${slug}`;
+        }
+
+
+        /*
+        ==================================================
+        TOOLTIP FUNCTIONS
+        ==================================================
+        */
+
+        const mapContainer =
+            document.getElementById("map-container");
+
+        const tooltip =
+            document.getElementById("tooltip");
+
+
+        function showTooltip(event, stateName) {
+            tooltip.textContent = stateName;
+            tooltip.classList.add("visible");
+
+            moveTooltip(event);
+        }
+
+
+        function moveTooltip(event) {
+            const containerBounds =
+                mapContainer.getBoundingClientRect();
+
+            const tooltipWidth =
+                tooltip.offsetWidth;
+
+            const tooltipHeight =
+                tooltip.offsetHeight;
+
+            let left =
+                event.clientX -
+                containerBounds.left +
+                14;
+
+            let top =
+                event.clientY -
+                containerBounds.top +
+                14;
+
+            /*
+            Keep the tooltip inside the map container.
+            */
+
+            if (
+                left + tooltipWidth >
+                containerBounds.width - 8
+            ) {
+                left =
+                    event.clientX -
+                    containerBounds.left -
+                    tooltipWidth -
+                    14;
+            }
+
+            if (
+                top + tooltipHeight >
+                containerBounds.height - 8
+            ) {
+                top =
+                    event.clientY -
+                    containerBounds.top -
+                    tooltipHeight -
+                    14;
+            }
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+        }
+
+
+        function hideTooltip() {
+            tooltip.classList.remove("visible");
+        }
+
+
+        /*
+        ==================================================
+        DRAW THE MAP
+        ==================================================
+        */
+
+        const svg =
+            d3.select("#us-map");
+
+        /*
+        The us-atlas file is already projected, so this
+        path generator does not require another projection.
+        */
+
+        const path =
+            d3.geoPath();
+
+
+        d3.json(US_ATLAS_URL)
+            .then(function (us) {
+
+                /*
+                Convert the TopoJSON state collection
+                into GeoJSON features.
+                */
+
+                const states =
+                    topojson.feature(
+                        us,
+                        us.objects.states
+                    ).features;
+
+
+                /*
+                Create one SVG link for every state.
+                Each link contains one state path.
+                */
+
+                const stateLinks =
+                    svg
+                        .selectAll("a.state-link")
+                        .data(states)
+                        .join("a")
+                        .attr("class", "state-link")
+                        .attr(
+                            "href",
+                            function (state) {
+                                return guideUrl(
+                                    state.properties.name
+                                );
+                            }
+                        )
+                        .attr("target", LINK_TARGET)
+                        .attr(
+                            "aria-label",
+                            function (state) {
+                                return (
+                                    "Open the " +
+                                    state.properties.name +
+                                    " voting guide"
+                                );
+                            }
+                        );
+
+
+                stateLinks
+                    .append("path")
+                    .attr("class", "state")
+                    .attr("d", path)
+                    .on(
+                        "pointerenter",
+                        function (event, state) {
+                            showTooltip(
+                                event,
+                                state.properties.name
+                            );
+                        }
+                    )
+                    .on(
+                        "pointermove",
+                        function (event) {
+                            moveTooltip(event);
+                        }
+                    )
+                    .on(
+                        "pointerleave",
+                        function () {
+                            hideTooltip();
+                        }
+                    );
+
+
+                /*
+                This supplies a basic browser tooltip as
+                a fallback when the custom tooltip is not
+                available.
+                */
+
+                stateLinks
+                    .append("title")
+                    .text(function (state) {
+                        return (
+                            state.properties.name +
+                            " — open voting guide"
+                        );
+                    });
+
+
+                /*
+                Remove the loading message.
+                */
+
+                document
+                    .getElementById("status-message")
+                    .remove();
+            })
+            .catch(function (error) {
+                console.error(
+                    "The U.S. map could not load:",
+                    error
+                );
+
+                const status =
+                    document.getElementById(
+                        "status-message"
+                    );
+
+                status.textContent =
+                    "The map could not load. Please refresh the page.";
+            });
+
+
+        /*
+        ==================================================
+        DC AND TERRITORY LINKS
+        ==================================================
+        */
+
+        const extraJurisdictions = [
+            {
+                name: "District of Columbia",
+                displayName: "Washington, DC",
+                slug: "district-of-columbia"
+            },
+            {
+                name: "Puerto Rico",
+                displayName: "Puerto Rico",
+                slug: "puerto-rico"
+            },
+            {
+                name: "Guam",
+                displayName: "Guam",
+                slug: "guam"
+            },
+            {
+                name: "U.S. Virgin Islands",
+                displayName: "U.S. Virgin Islands",
+                slug: "us-virgin-islands"
+            },
+            {
+                name: "American Samoa",
+                displayName: "American Samoa",
+                slug: "american-samoa"
+            },
+            {
+                name: "Northern Mariana Islands",
+                displayName: "Northern Mariana Islands",
+                slug: "northern-mariana-islands"
+            }
+        ];
+
+
+        const extraLinksContainer =
+            document.getElementById("extra-links");
+
+
+        extraJurisdictions.forEach(function (jurisdiction) {
+            const link =
+                document.createElement("a");
+
+            link.className =
+                "jurisdiction-link";
+
+            link.textContent =
+                jurisdiction.displayName;
+
+            link.href =
+                guideUrl(
+                    jurisdiction.name,
+                    jurisdiction.slug
+                );
+
+            link.target =
+                LINK_TARGET;
+
+            link.setAttribute(
+                "aria-label",
+                "Open the " +
+                jurisdiction.displayName +
+                " voting guide"
+            );
+
+            /*
+            This is useful if LINK_TARGET is changed
+            to "_blank".
+            */
+
+            link.rel =
+                "noopener noreferrer";
+
+            extraLinksContainer.appendChild(link);
+        });
+    </script>
+</body>
+</html>
