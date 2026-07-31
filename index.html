@@ -210,72 +210,113 @@
             font-size: 14px;
         }
 
-        /*
+       /*
         ----------------------------------------
-        DC AND TERRITORY LINKS
+        FLOATING JURISDICTION LINKS
         ----------------------------------------
         */
-
-        .extra-jurisdictions {
-            margin-top: 10px;
-            padding-top: 14px;
-
-            border-top: 1px solid rgba(31, 36, 48, 0.18);
-        }
-
-        .extra-jurisdictions-label {
-            margin: 0 0 10px;
-
-            color: var(--charcoal);
-
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .extra-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
+        
         .jurisdiction-link {
+            position: absolute;
+        
             display: inline-flex;
             align-items: center;
             justify-content: center;
-
-            min-height: 38px;
-            padding: 8px 13px;
-
+        
+            min-height: 32px;
+            padding: 6px 10px;
+        
             background: var(--blue);
             color: white;
-
+        
             border: 2px solid transparent;
-            border-radius: 9px;
-
-            font-size: 13px;
+            border-radius: 8px;
+        
+            font-size: 12px;
             font-weight: 500;
-            line-height: 1.2;
+            line-height: 1.1;
             text-align: center;
+        
             text-decoration: none;
-
+        
+            white-space: nowrap;
+        
             transition:
                 background 160ms ease,
                 border-color 160ms ease,
                 transform 160ms ease;
         }
-
+        
+        
         .jurisdiction-link:hover,
         .jurisdiction-link:focus,
         .jurisdiction-link:focus-visible {
             background: var(--red);
             color: white;
             outline: none;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
-
+        
+        
         .jurisdiction-link:focus,
         .jurisdiction-link:focus-visible {
             border-color: var(--gold);
+        }
+        
+        
+        /*
+        Positioning container
+        */
+        
+        #extra-links {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        
+        
+        .jurisdiction-link {
+            pointer-events: auto;
+        }
+        
+        
+        /*
+        Individual placements
+        */
+        
+        #jurisdiction-dc {
+            left: 83%;
+            top: 35%;
+        }
+        
+        
+        #jurisdiction-puerto-rico {
+            left: 83%;
+            top: 60%;
+        }
+        
+        
+        #jurisdiction-virgin-islands {
+            left: 90%;
+            top: 63%;
+        }
+        
+        
+        #jurisdiction-guam {
+            left: 4%;
+            top: 74%;
+        }
+        
+        
+        #jurisdiction-northern-mariana-islands {
+            left: 8%;
+            top: 67%;
+        }
+        
+        
+        #jurisdiction-american-samoa {
+            left: 12%;
+            top: 82%;
         }
 
         /*
@@ -331,6 +372,8 @@
                 role="tooltip"
             ></div>
 
+            <div id="extra-links"></div>
+
             <div
                 class="status-message"
                 id="status-message"
@@ -339,33 +382,6 @@
             </div>
 
         </div>
-
-        <!--
-        DC also appears geographically on the map,
-        but its shape is very small. This companion link
-        makes it easier to select.
-
-        Territories are shown here because ordinary
-        mainland map projections do not give them
-        practical, equally clickable positions.
-        -->
-
-        <section
-            class="extra-jurisdictions"
-            aria-labelledby="extra-jurisdictions-label"
-        >
-            <p
-                class="extra-jurisdictions-label"
-                id="extra-jurisdictions-label"
-            >
-                Washington, DC and U.S. territories
-            </p>
-
-            <div
-                class="extra-links"
-                id="extra-links"
-            ></div>
-        </section>
 
     </main>
 
@@ -454,6 +470,11 @@
             const slug = customSlug || slugify(name);
         
             return `${VOTE_ORG_BASE}/${slug}/`;
+        }
+        
+        
+        function territoryUrl(slug) {
+            return `https://www.usvotefoundation.org/state-voter-information/${slug}`;
         }
 
 
@@ -682,7 +703,38 @@
             {
                 name: "District of Columbia",
                 displayName: "Washington, DC",
-                slug: "district-of-columbia"
+                slug: "district-of-columbia",
+                id: "jurisdiction-dc"
+            },
+            {
+                name: "Puerto Rico",
+                displayName: "Puerto Rico",
+                slug: "puerto-rico",
+                id: "jurisdiction-puerto-rico"
+            },
+            {
+                name: "Virgin Islands",
+                displayName: "U.S. Virgin Islands",
+                slug: "virgin-islands",
+                id: "jurisdiction-virgin-islands"
+            },
+            {
+                name: "American Samoa",
+                displayName: "American Samoa",
+                slug: "american-samoa",
+                id: "jurisdiction-american-samoa"
+            },
+            {
+                name: "Guam",
+                displayName: "Guam",
+                slug: "guam",
+                id: "jurisdiction-guam"
+            },
+            {
+                name: "Northern Mariana Islands",
+                displayName: "Northern Mariana Islands",
+                slug: "northern-mariana-islands",
+                id: "jurisdiction-northern-mariana-islands"
             }
         ];
 
@@ -698,12 +750,14 @@
             link.className =
                 "jurisdiction-link";
 
+            link.id =
+                jurisdiction.id;
+
             link.textContent =
                 jurisdiction.displayName;
 
             link.href =
-                guideUrl(
-                    jurisdiction.name,
+                territoryUrl(
                     jurisdiction.slug
                 );
 
