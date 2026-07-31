@@ -399,76 +399,15 @@
         https://username.wixsite.com/site-name
         */
 
-        const WIX_DOMAIN = "https://YOUR-WIX-DOMAIN.com";
-
-
-        /*
-        2. This is the shared folder or prefix appearing
-        before each state's name.
-
-        For pages such as:
-
-        https://example.org/voting-guides/california
-
-        use:
-
-        /voting-guides
-
-        For pages such as:
-
-        https://example.org/california
-
-        use an empty string:
-
-        ""
-        */
-
-        const GUIDE_FOLDER = "/voting-guides";
-
+        const VOTE_ORG_BASE = "https://www.vote.org/state";
 
         /*
-        3. "_top" attempts to replace the entire Wix page
-        when someone clicks a state.
-
-        If Wix or the browser blocks that behavior,
-        change this to "_blank" to open the guide in
-        a new tab.
+        Open Vote.org in a new tab.
+        
+        This is the most reliable option because your map
+        will be running inside a Wix iframe.
         */
-
-        const LINK_TARGET = "_top";
-
-
-        /*
-        ==================================================
-        OPTIONAL URL EXCEPTIONS
-        ==================================================
-
-        Most links are generated automatically from the
-        jurisdiction name.
-
-        California becomes:
-        /voting-guides/california
-
-        District of Columbia becomes:
-        /voting-guides/district-of-columbia
-
-        Add an exception here only when one Wix page has
-        a different address.
-
-        Use the complete page URL.
-        */
-
-        const URL_OVERRIDES = {
-            /*
-            Example:
-
-            "California":
-                "https://www.example.org/california-voter-information",
-
-            "District of Columbia":
-                "https://www.example.org/dc"
-            */
-        };
+        const LINK_TARGET = "_blank";
 
 
         /*
@@ -512,22 +451,9 @@
         */
 
         function guideUrl(name, customSlug = null) {
-            if (URL_OVERRIDES[name]) {
-                return URL_OVERRIDES[name];
-            }
-
-            const cleanDomain =
-                WIX_DOMAIN.replace(/\/+$/, "");
-
-            const cleanFolder =
-                GUIDE_FOLDER
-                    ? "/" + GUIDE_FOLDER.replace(/^\/+|\/+$/g, "")
-                    : "";
-
-            const slug =
-                customSlug || slugify(name);
-
-            return `${cleanDomain}${cleanFolder}/${slug}`;
+            const slug = customSlug || slugify(name);
+        
+            return `${VOTE_ORG_BASE}/${slug}/`;
         }
 
 
@@ -545,9 +471,14 @@
 
 
         function showTooltip(event, stateName) {
-            tooltip.textContent = stateName;
+            tooltip.innerHTML = `
+                <strong>${stateName}</strong><br>
+                <span style="font-size:12px; font-weight:300;">
+                    Open voting information →
+                </span>
+            `;
+        
             tooltip.classList.add("visible");
-
             moveTooltip(event);
         }
 
@@ -661,6 +592,7 @@
                             }
                         )
                         .attr("target", LINK_TARGET)
+                        .attr("rel", "noopener noreferrer")
                         .attr(
                             "aria-label",
                             function (state) {
@@ -711,7 +643,7 @@
                     .text(function (state) {
                         return (
                             state.properties.name +
-                            " — open voting guide"
+                            " — open on Vote.org"
                         );
                     });
 
@@ -751,31 +683,6 @@
                 name: "District of Columbia",
                 displayName: "Washington, DC",
                 slug: "district-of-columbia"
-            },
-            {
-                name: "Puerto Rico",
-                displayName: "Puerto Rico",
-                slug: "puerto-rico"
-            },
-            {
-                name: "Guam",
-                displayName: "Guam",
-                slug: "guam"
-            },
-            {
-                name: "U.S. Virgin Islands",
-                displayName: "U.S. Virgin Islands",
-                slug: "us-virgin-islands"
-            },
-            {
-                name: "American Samoa",
-                displayName: "American Samoa",
-                slug: "american-samoa"
-            },
-            {
-                name: "Northern Mariana Islands",
-                displayName: "Northern Mariana Islands",
-                slug: "northern-mariana-islands"
             }
         ];
 
@@ -805,9 +712,8 @@
 
             link.setAttribute(
                 "aria-label",
-                "Open the " +
-                jurisdiction.displayName +
-                " voting guide"
+                "Open Vote.org information for " +
+                jurisdiction.displayName
             );
 
             /*
