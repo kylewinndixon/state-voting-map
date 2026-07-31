@@ -75,18 +75,19 @@
             width: 100%;
             max-width: 1100px;
             margin: 0 auto;
-            padding: 18px;
+            padding: 12px;
         }
 
         .map-container {
             position: relative;
             width: 100%;
+            aspect-ratio: 975 / 610;
         }
 
         #us-map {
             display: block;
             width: 100%;
-            height: auto;
+            height: 100%;
             overflow: visible;
         }
 
@@ -279,44 +280,73 @@
             pointer-events: auto;
         }
         
+        .full-map-button {
+            display: block;
         
+            width: fit-content;
+        
+            margin: 14px auto 0;
+        
+            padding: 10px 18px;
+        
+            background: var(--blue);
+            color: white;
+        
+            border-radius: 9px;
+        
+            text-decoration: none;
+        
+            font-size: 14px;
+            font-weight: 600;
+        
+            transition:
+                background 160ms ease,
+                transform 160ms ease;
+        }
+        
+        
+        .full-map-button:hover,
+        .full-map-button:focus {
+            background: var(--red);
+            transform: translateY(-1px);
+        }
         /*
         Individual placements
         */
         
         #jurisdiction-dc {
-            left: 83%;
-            top: 35%;
+            left: 82%;
+            top: 30%;
         }
         
         
         #jurisdiction-puerto-rico {
-            left: 83%;
-            top: 60%;
-        }
-        
-        
-        #jurisdiction-virgin-islands {
-            left: 90%;
-            top: 63%;
-        }
-        
-        
-        #jurisdiction-guam {
-            left: 4%;
+            left: 88%;
             top: 74%;
         }
         
         
+        #jurisdiction-virgin-islands {
+            left: 95%;
+            top: 76%;
+        }
+        
+        
+        #jurisdiction-guam {
+            left: -2%;
+            top: 66%;
+        }
+        
+        
         #jurisdiction-northern-mariana-islands {
-            left: 8%;
-            top: 67%;
+            left: 2%;
+            top: 57%;
         }
         
         
         #jurisdiction-american-samoa {
-            left: 12%;
-            top: 82%;
+            left: 5%;
+            top: 84%;
         }
 
         /*
@@ -382,7 +412,16 @@
             </div>
 
         </div>
-
+        
+        <a
+            class="full-map-button"
+            href="https://kylewinndixon.github.io/state-voting-map/"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            Open full-size voting map →
+        </a>
+        
     </main>
 
     <!-- D3 draws the SVG paths. -->
