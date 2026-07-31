@@ -1,0 +1,843 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>State Voting Guides</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <style>
+        /*
+        ----------------------------------------
+        PAGE AND COLOR SETTINGS
+        ----------------------------------------
+        */
+
+        :root {
+            --cream: #F2EEDF;
+            --blue: #5D8AA8;
+            --red: #DE5452;
+            --gold: #F4B942;
+            --charcoal: #1F2430;
+            --muted-text: #505761;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+
+            background: var(--cream);
+            color: var(--charcoal);
+
+            font-family:
+                Avenir,
+                "Avenir Next",
+                Helvetica,
+                Arial,
+                sans-serif;
+        }
+
+        /*
+        Visually hidden text remains available
+        to screen readers.
+        */
+
+        .screen-reader-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /*
+        ----------------------------------------
+        MAIN MAP CONTAINER
+        ----------------------------------------
+        */
+
+        .map-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 12px;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 975 / 500;
+        }
+
+        #us-map {
+            display: block;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /*
+        ----------------------------------------
+        STATE STYLING
+        ----------------------------------------
+        */
+
+        .state {
+            fill: var(--blue);
+
+            /*
+            Cream borders match the Wix background.
+            */
+            stroke: var(--cream);
+            stroke-width: 1.4;
+
+            /*
+            Keeps the border approximately the same
+            thickness when the SVG changes size.
+            */
+            vector-effect: non-scaling-stroke;
+
+            transition:
+                fill 160ms ease,
+                stroke 160ms ease,
+                opacity 160ms ease;
+        }
+
+        /*
+        The state turns red on mouse hover.
+        It also turns red when reached by keyboard.
+        */
+
+        .state-link:hover .state,
+        .state-link:focus .state,
+        .state-link:focus-visible .state {
+            fill: var(--red);
+            cursor: pointer;
+        }
+
+        /*
+        A gold border makes keyboard focus clearer.
+        */
+
+        .state-link:focus,
+        .state-link:focus-visible {
+            outline: none;
+        }
+
+        .state-link:focus .state,
+        .state-link:focus-visible .state {
+            stroke: var(--gold);
+            stroke-width: 3;
+        }
+
+        /*
+        ----------------------------------------
+        CUSTOM TOOLTIP
+        ----------------------------------------
+        */
+
+        .tooltip {
+            position: absolute;
+            z-index: 10;
+
+            display: none;
+            pointer-events: none;
+
+            padding: 8px 11px;
+
+            background: var(--charcoal);
+            color: white;
+
+            border-radius: 8px;
+
+            font-family:
+                Avenir,
+                "Avenir Next",
+                Helvetica,
+                Arial,
+                sans-serif;
+
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.25;
+
+            box-shadow: 0 4px 12px rgba(31, 36, 48, 0.22);
+
+            /*
+            Prevent the tooltip from being too wide.
+            */
+            max-width: 220px;
+        }
+
+        .tooltip.visible {
+            display: block;
+        }
+
+        /*
+        ----------------------------------------
+        LOADING OR ERROR MESSAGE
+        ----------------------------------------
+        */
+
+        .status-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            padding: 10px 14px;
+
+            background: rgba(236, 230, 214, 0.94);
+            color: var(--charcoal);
+
+            border: 1px solid rgba(31, 36, 48, 0.15);
+            border-radius: 9px;
+
+            font-size: 14px;
+        }
+
+       /*
+        ----------------------------------------
+        FLOATING JURISDICTION LINKS
+        ----------------------------------------
+        */
+        
+        .jurisdiction-link {
+            position: absolute;
+        
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        
+            min-height: 32px;
+            padding: 6px 10px;
+        
+            background: var(--blue);
+            color: white;
+        
+            border: 2px solid transparent;
+            border-radius: 8px;
+        
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.1;
+            text-align: center;
+        
+            text-decoration: none;
+        
+            white-space: nowrap;
+        
+            transition:
+                background 160ms ease,
+                border-color 160ms ease,
+                transform 160ms ease;
+        }
+        
+        
+        .jurisdiction-link:hover,
+        .jurisdiction-link:focus,
+        .jurisdiction-link:focus-visible {
+            background: var(--red);
+            color: white;
+            outline: none;
+            transform: translateY(-2px);
+        }
+        
+        
+        .jurisdiction-link:focus,
+        .jurisdiction-link:focus-visible {
+            border-color: var(--gold);
+        }
+        
+        
+        /*
+        Positioning container
+        */
+        
+        #extra-links {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        
+        
+        .jurisdiction-link {
+            pointer-events: auto;
+        }
+        
+        .full-map-button {
+            display: block;
+        
+            width: fit-content;
+        
+            margin: 14px auto 0;
+        
+            padding: 10px 18px;
+        
+            background: var(--blue);
+            color: white;
+        
+            border-radius: 9px;
+        
+            text-decoration: none;
+        
+            font-size: 14px;
+            font-weight: 600;
+        
+            transition:
+                background 160ms ease,
+                transform 160ms ease;
+        }
+        
+        
+        .full-map-button:hover,
+        .full-map-button:focus {
+            background: var(--red);
+            transform: translateY(-1px);
+        }
+        /*
+        Individual placements
+        */
+        
+        #jurisdiction-dc {
+            left: 91%;
+            top: 40%;
+        }
+        
+        
+        #jurisdiction-puerto-rico {
+            left: 86%;
+            top: 66%;
+        }
+        
+        #jurisdiction-virgin-islands {
+            left: 82%;
+            top: 74%;
+        }
+        
+        #jurisdiction-northern-mariana-islands {
+            left: 0%;
+            top: 62%;
+        }
+        
+         #jurisdiction-guam {
+            left: 7%;
+            top: 69%;
+        }
+        
+        #jurisdiction-american-samoa {
+            left: 1%;
+            top: 76%;
+        }
+
+        /*
+        ----------------------------------------
+        MOBILE ADJUSTMENTS
+        ----------------------------------------
+        */
+
+        @media (max-width: 600px) {
+            .map-wrapper {
+                padding: 8px;
+            }
+
+            .tooltip {
+                font-size: 13px;
+            }
+
+            .jurisdiction-link {
+                flex: 1 1 calc(50% - 8px);
+                font-size: 12px;
+                padding: 8px;
+            }
+        }
+
+      .jurisdiction-link {
+          display: none;
+      }
+      
+    </style>
+</head>
+
+<body>
+
+    <main class="map-wrapper">
+
+        <h1 class="screen-reader-only">
+            Select your state or jurisdiction
+        </h1>
+
+        <div class="map-container" id="map-container">
+
+            <!--
+            The viewBox matches the dimensions for which
+            the us-atlas Albers data was prepared.
+            -->
+
+            <svg
+                id="us-map"
+                viewBox="0 0 975 610"
+                preserveAspectRatio="xMidYMid meet"
+                role="img"
+                aria-label="Clickable map of the United States"
+            ></svg>
+
+            <div
+                class="tooltip"
+                id="tooltip"
+                role="tooltip"
+            ></div>
+
+            <div id="extra-links"></div>
+
+            <div
+                class="status-message"
+                id="status-message"
+            >
+                Loading map…
+            </div>
+
+        </div>
+        
+        <a
+            class="full-map-button"
+            href="https://kylewinndixon.github.io/state-voting-map/"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            Open full-size voting map →
+        </a>
+        
+    </main>
+
+    <!-- D3 draws the SVG paths. -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+    <!--
+    TopoJSON Client converts the us-atlas
+    TopoJSON data into ordinary GeoJSON features.
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+
+    <script>
+        /*
+        ==================================================
+        EDIT THESE SETTINGS
+        ==================================================
+        */
+
+        /*
+        1. Replace this with the address of your Wix site.
+
+        Do not include a slash at the end.
+
+        Examples:
+
+        https://www.example.org
+
+        or, while using a free Wix address:
+
+        https://username.wixsite.com/site-name
+        */
+
+        const VOTE_ORG_BASE = "https://www.vote.org/state";
+
+        /*
+        Open Vote.org in a new tab.
+        
+        This is the most reliable option because your map
+        will be running inside a Wix iframe.
+        */
+        const LINK_TARGET = "_blank";
+
+
+        /*
+        ==================================================
+        DATA LOCATION
+        ==================================================
+        */
+
+        const US_ATLAS_URL =
+            "https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json";
+
+
+        /*
+        ==================================================
+        URL FUNCTIONS
+        ==================================================
+        */
+
+        /*
+        Converts a state name into a simple URL slug.
+
+        Example:
+        "New York" → "new-york"
+        */
+
+        function slugify(name) {
+            return name
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/&/g, "and")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "");
+        }
+
+
+        /*
+        Creates a complete Wix URL for a state.
+
+        A manually entered URL override takes priority.
+        */
+
+        function guideUrl(name, customSlug = null) {
+            const slug = customSlug || slugify(name);
+        
+            return `${VOTE_ORG_BASE}/${slug}/`;
+        }
+        
+        
+        function territoryUrl(slug) {
+            return `https://www.usvotefoundation.org/state-voter-information/${slug}`;
+        }
+
+
+        /*
+        ==================================================
+        TOOLTIP FUNCTIONS
+        ==================================================
+        */
+
+        const mapContainer =
+            document.getElementById("map-container");
+
+        const tooltip =
+            document.getElementById("tooltip");
+
+
+        function showTooltip(event, stateName) {
+            tooltip.innerHTML = `
+                <strong>${stateName}</strong><br>
+                <span style="font-size:12px; font-weight:300;">
+                    Open voting information →
+                </span>
+            `;
+        
+            tooltip.classList.add("visible");
+            moveTooltip(event);
+        }
+
+
+        function moveTooltip(event) {
+            const containerBounds =
+                mapContainer.getBoundingClientRect();
+
+            const tooltipWidth =
+                tooltip.offsetWidth;
+
+            const tooltipHeight =
+                tooltip.offsetHeight;
+
+            let left =
+                event.clientX -
+                containerBounds.left +
+                14;
+
+            let top =
+                event.clientY -
+                containerBounds.top +
+                14;
+
+            /*
+            Keep the tooltip inside the map container.
+            */
+
+            if (
+                left + tooltipWidth >
+                containerBounds.width - 8
+            ) {
+                left =
+                    event.clientX -
+                    containerBounds.left -
+                    tooltipWidth -
+                    14;
+            }
+
+            if (
+                top + tooltipHeight >
+                containerBounds.height - 8
+            ) {
+                top =
+                    event.clientY -
+                    containerBounds.top -
+                    tooltipHeight -
+                    14;
+            }
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+        }
+
+
+        function hideTooltip() {
+            tooltip.classList.remove("visible");
+        }
+
+
+        /*
+        ==================================================
+        DRAW THE MAP
+        ==================================================
+        */
+
+        const svg =
+            d3.select("#us-map");
+
+        /*
+        The us-atlas file is already projected, so this
+        path generator does not require another projection.
+        */
+
+        const path =
+            d3.geoPath();
+
+
+        d3.json(US_ATLAS_URL)
+            .then(function (us) {
+
+                /*
+                Convert the TopoJSON state collection
+                into GeoJSON features.
+                */
+
+                const states =
+                    topojson.feature(
+                        us,
+                        us.objects.states
+                    ).features;
+
+
+                /*
+                Create one SVG link for every state.
+                Each link contains one state path.
+                */
+
+                const stateLinks =
+                    svg
+                        .selectAll("a.state-link")
+                        .data(states)
+                        .join("a")
+                        .attr("class", "state-link")
+                        .attr(
+                            "href",
+                            function (state) {
+                                return guideUrl(
+                                    state.properties.name
+                                );
+                            }
+                        )
+                        .attr("target", LINK_TARGET)
+                        .attr("rel", "noopener noreferrer")
+                        .attr(
+                            "aria-label",
+                            function (state) {
+                                return (
+                                    "Open the " +
+                                    state.properties.name +
+                                    " voting guide"
+                                );
+                            }
+                        );
+
+
+                stateLinks
+                    .append("path")
+                    .attr("class", "state")
+                    .attr("d", path)
+                    .attr(
+                        "transform",
+                        function(state) {
+                
+                            const name =
+                                state.properties.name;
+                
+                            if (name === "Alaska") {
+                                return "translate(45,-140) scale (1.3)";
+                            }
+                
+                            if (name === "Hawaii") {
+                                return "translate(45,0)";
+                            }
+                
+                            return null;
+                        }
+                    )
+                    .on(
+                        "pointerenter",
+                        function (event, state) {
+                            showTooltip(
+                                event,
+                                state.properties.name
+                            );
+                        }
+                    )
+                    .on(
+                        "pointermove",
+                        function (event) {
+                            moveTooltip(event);
+                        }
+                    )
+                    .on(
+                        "pointerleave",
+                        function () {
+                            hideTooltip();
+                        }
+                    );
+
+
+                /*
+                This supplies a basic browser tooltip as
+                a fallback when the custom tooltip is not
+                available.
+                */
+
+                stateLinks
+                    .append("title")
+                    .text(function (state) {
+                        return (
+                            state.properties.name +
+                            " — open on Vote.org"
+                        );
+                    });
+
+
+                /*
+                Remove the loading message.
+                */
+
+                document
+                    .getElementById("status-message")
+                    .remove();
+            })
+            .catch(function (error) {
+                console.error(
+                    "The U.S. map could not load:",
+                    error
+                );
+
+                const status =
+                    document.getElementById(
+                        "status-message"
+                    );
+
+                status.textContent =
+                    "The map could not load. Please refresh the page.";
+            });
+
+
+        /*
+        ==================================================
+        DC AND TERRITORY LINKS
+        ==================================================
+        */
+
+        const extraJurisdictions = [
+            {
+                name: "District of Columbia",
+                displayName: "DC",
+                slug: "district-of-columbia",
+                id: "jurisdiction-dc"
+            },
+            {
+                name: "Puerto Rico",
+                displayName: "Puerto Rico",
+                slug: "puerto-rico",
+                id: "jurisdiction-puerto-rico"
+            },
+            {
+                name: "Virgin Islands",
+                displayName: "Virgin Islands",
+                slug: "virgin-islands",
+                id: "jurisdiction-virgin-islands"
+            },
+            {
+                name: "American Samoa",
+                displayName: "Am. Samoa",
+                slug: "american-samoa",
+                id: "jurisdiction-american-samoa"
+            },
+            {
+                name: "Guam",
+                displayName: "Guam",
+                slug: "guam",
+                id: "jurisdiction-guam"
+            },
+            {
+                name: "Northern Mariana Islands",
+                displayName: "N. Marianas",
+                slug: "northern-mariana-islands",
+                id: "jurisdiction-northern-mariana-islands"
+            }
+        ];
+
+
+        const extraLinksContainer =
+            document.getElementById("extra-links");
+
+
+        extraJurisdictions.forEach(function (jurisdiction) {
+            const link =
+                document.createElement("a");
+
+            link.className =
+                "jurisdiction-link";
+
+            link.id =
+                jurisdiction.id;
+
+            link.textContent =
+                jurisdiction.displayName;
+
+            link.href =
+                territoryUrl(
+                    jurisdiction.slug
+                );
+
+            link.target =
+                LINK_TARGET;
+
+            link.setAttribute(
+                "aria-label",
+                "Open Vote.org information for " +
+                jurisdiction.displayName
+            );
+
+            /*
+            This is useful if LINK_TARGET is changed
+            to "_blank".
+            */
+
+            link.rel =
+                "noopener noreferrer";
+
+            extraLinksContainer.appendChild(link);
+        });
+    </script>
+</body>
+</html>
