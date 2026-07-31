@@ -669,6 +669,24 @@
                     .append("path")
                     .attr("class", "state")
                     .attr("d", path)
+                    .attr(
+                        "transform",
+                        function(state) {
+                
+                            const name =
+                                state.properties.name;
+                
+                            if (name === "Alaska") {
+                                return "translate(35,20)";
+                            }
+                
+                            if (name === "Hawaii") {
+                                return "translate(35,20)";
+                            }
+                
+                            return null;
+                        }
+                    )
                     .on(
                         "pointerenter",
                         function (event, state) {
